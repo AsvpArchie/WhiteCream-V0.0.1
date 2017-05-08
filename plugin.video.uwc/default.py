@@ -126,7 +126,8 @@ def INDEXW():
     utils.addDir('[COLOR hotpink]Cam4[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.cam4.com',280,os.path.join(imgDir, 'cam4.png'),'')    
     utils.addDir('[COLOR hotpink]Camsoda[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.camsoda.com',475,os.path.join(imgDir, 'camsoda.png'),'')    
     utils.addDir('[COLOR hotpink]naked.com[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.naked.com',480,os.path.join(imgDir, 'naked.png'),'')
-    utils.addDir('[COLOR hotpink]streamate.com[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.streammate.com',515,os.path.join(imgDir, 'naked.png'),'')
+    utils.addDir('[COLOR hotpink]streamate.com[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.streammate.com',515,os.path.join(imgDir, 'streamate.png'),'')
+    utils.addDir('[COLOR hotpink]bongacams.com[/COLOR] [COLOR white]- webcams[/COLOR]','http://www.bongacams.com',520,os.path.join(imgDir, 'bongacams.png'),'')
     xbmcplugin.endOfDirectory(utils.addon_handle, cacheToDisc=False)
 
 @utils.url_dispatcher.register('3')

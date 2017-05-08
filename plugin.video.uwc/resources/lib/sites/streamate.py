@@ -24,29 +24,33 @@ import xbmcplugin
 import xbmcgui
 
 from resources.lib import utils
+from resources.lib import favorites
 from resources.lib import websocket
 
 @utils.url_dispatcher.register('515')
 def Main():
-	utils.addDir('[COLOR red]Refresh streamate.com images[/COLOR]','',517,'',Folder=False)
-	List('http://api.naiadsystems.com/search/v1/list?results_per_page=100')
-	xbmcplugin.endOfDirectory(utils.addon_handle)
+    utils.addDir('[COLOR red]Refresh streamate.com images[/COLOR]','',517,'',Folder=False)
+    utils.addDir('[COLOR hotpink]Search + Fav add[/COLOR]','https://www.streamate.com/cam/',519,'','')
+    List('http://api.naiadsystems.com/search/v1/list?results_per_page=100')
+    xbmcplugin.endOfDirectory(utils.addon_handle)
 
-@utils.url_dispatcher.register('516', ['url'])
-def List(url):
+@utils.url_dispatcher.register('516', ['url'], ['page'])
+def List(url, page=1):
     if utils.addon.getSetting("chaturbate") == "true":
         clean_database(False)
     try:
-        data = utils.getHtml(url)
+        data = utils.getHtml(url + "&page_number=" + str(page))
     except:
         utils.notify('Oh oh','It looks like this website is down.')
         return None
     model_list = json.loads(data)
     for camgirl in model_list['Results']:
-        img = "http://streamate.com/thumb/snap/" + str(camgirl['PerformerId']) + ".jpg"
+        img = "http://m1.nsimg.net/media/snap/" + str(camgirl['PerformerId']) + ".jpg"
         performerID = str(camgirl['PerformerId'])
         name = camgirl['Nickname']
         utils.addDownLink(name, performerID, 518, img, '', noDownload=True)
+    npage = page + 1
+    utils.addDir('Next Page (' + str(npage) + ')', url, 516, '', npage)
     xbmcplugin.endOfDirectory(utils.addon_handle)
 
 
@@ -55,12 +59,12 @@ def clean_database(showdialog=True):
     conn = sqlite3.connect(xbmc.translatePath("special://database/Textures13.db"))
     try:
         with conn:
-            list = conn.execute("SELECT id, cachedurl FROM texture WHERE url LIKE '%%%s%%';" % "streamate.com")
+            list = conn.execute("SELECT id, cachedurl FROM texture WHERE url LIKE '%%%s%%';" % "m1.nsimg.net")
             for row in list:
                 conn.execute("DELETE FROM sizes WHERE idtexture LIKE '%s';" % row[0])
                 try: os.remove(xbmc.translatePath("special://thumbnails/" + row[1]))
                 except: pass
-            conn.execute("DELETE FROM texture WHERE url LIKE '%%%s%%';" % "streamate.com")
+            conn.execute("DELETE FROM texture WHERE url LIKE '%%%s%%';" % "m1.nsimg.net")
             if showdialog:
                 utils.notify('Finished','streamate.com images cleared')
     except:
@@ -86,6 +90,13 @@ def Playvid(performerID, name):
            ws.close()
            utils.notify('Model is offline')
            return None
+
+        match = re.compile('isPaid":true', re.DOTALL | re.IGNORECASE).findall(message)
+        if match:
+           quitting=1
+           ws.close()
+           utils.notify('Model not in freechat')
+           return None
 		   
         match = re.compile('roomInfoUpdate', re.DOTALL | re.IGNORECASE).findall(message)
         if match:
@@ -97,7 +108,6 @@ def Playvid(performerID, name):
                   videourl = match[0]
                   quitting=1
                   ws.close()
-           
 
     iconimage = xbmc.getInfoImage("ListItem.Thumb")
     listitem = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
@@ -111,3 +121,20 @@ def Playvid(performerID, name):
     else:
         listitem.setPath(str(videourl))
         xbmcplugin.setResolvedUrl(utils.addon_handle, True, listitem)
+
+@utils.url_dispatcher.register('519', ['url'])
+def Search(url):
+    keyword = utils._get_keyboard(heading="Searching for...")
+    if (not keyword): return False, 0
+    try:
+        response = utils.getHtml(url + keyword)
+    except:
+        utils.notify('Model not found - try again')
+        return None
+    match = re.compile("p_signupargs: 'smid%3D([^']+)'", re.DOTALL | re.IGNORECASE).findall(response)
+    if match:
+        utils.notify('Found ' + keyword + ' adding to favorites now')
+        img = "http://m1.nsimg.net/media/snap/" + match[0] + ".jpg"
+        performerID = match[0]
+        name = keyword
+        favorites.Favorites('add', 518, name, performerID, img)
