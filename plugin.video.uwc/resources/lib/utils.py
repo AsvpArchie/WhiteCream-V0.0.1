@@ -604,7 +604,7 @@ def playvideo(videosource, name, download=None, url=None):
         progress.update( 40, "", "Loading Rapidvideo", "" )
         rpvideourl = re.compile(r"(?://|\.)(?:rapidvideo|raptu)\.com/(?:embed/|e/|\?v=)?([0-9A-Za-z]+)", re.DOTALL | re.IGNORECASE).findall(videosource)
         rpvideourl = chkmultivids(rpvideourl)
-        rpvideourl = 'http://www.raptu.com/embed/%s' % rpvideourl
+        rpvideourl = 'http://www.rapidvideo.com/embed/%s' % rpvideourl
         progress.update( 50, "", "Loading Rapidvideo", "Sending it to urlresolver")
         video = urlresolver.resolve(rpvideourl)
         if video:
