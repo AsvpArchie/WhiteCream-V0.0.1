@@ -36,7 +36,6 @@ def List(url, page=0):
         postRequest = {'page' : str(page)}
         response = utils.postHtml(url, form_data=postRequest,headers={},compression=False)
     except:
-        utils.notify('Oh oh','It looks like this website is down.')
         return None
     match = re.compile(r'<div class="video-item">[^"]+"/watch/([^"]+)"[^/]+/[^/]+/[^/]+/([^"]+)" alt="([^"]+)', re.DOTALL | re.IGNORECASE).findall(response)
     for video, img, name in match:
